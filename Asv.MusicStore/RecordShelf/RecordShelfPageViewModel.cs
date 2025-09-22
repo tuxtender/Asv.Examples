@@ -81,6 +81,5 @@ public class RecordShelfPageViewModel
 
 	protected override void AfterLoadExtensions()
 	{
-		throw new System.NotImplementedException();
 	}
 }

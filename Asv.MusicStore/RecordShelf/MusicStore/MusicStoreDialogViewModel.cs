@@ -1,21 +1,21 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Asv.Avalonia;
 using Asv.Common;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
+using Asv.MusicStore.RecordShelf.Album;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using ObservableCollections;
 using R3;
 
 namespace Asv.MusicStore.RecordShelf.MusicStore;
 
 public class MusicStoreDialogViewModel : DialogViewModelBase
 {
+	private readonly ObservableList<AlbumViewModel> _searchResults = [];
+	private readonly ILoggerFactory _loggerFactory;
 	public const string DialogId = $"{BaseId}.musicstore";
 	
 	private CancellationTokenSource? _cancellationTokenSource;
@@ -30,9 +30,19 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 	[ImportingConstructor]
 	public MusicStoreDialogViewModel(ILoggerFactory loggerFactory, IUnitService unitService)
 		: base(DialogId, loggerFactory) {
-	
+		_loggerFactory = loggerFactory;
+
+		SearchResults = _searchResults
+			.ToNotifyCollectionChangedSlim(SynchronizationContextCollectionEventDispatcher.Current)
+			.DisposeItWith(Disposable);
 	
 		BuyMusicCommand = new ReactiveCommand(BuyMusic).DisposeItWith(Disposable);
+		IsBusy = new BindableReactiveProperty<bool>().DisposeItWith(Disposable);
+		
+		SelectedAlbum = new BindableReactiveProperty<AlbumViewModel?>().DisposeItWith(Disposable);
+		
+		SearchText = new BindableReactiveProperty<string?>().DisposeItWith(Disposable);
+		SearchText.Subscribe(OnSearchTextChanged);
 
 	}
 
@@ -41,21 +51,21 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 		throw new System.NotImplementedException();
 	}
 
-	// [ObservableProperty]
-	// public partial string? SearchText { get; set; }
+	public BindableReactiveProperty<string?> SearchText { get; }
+
+
 	
-	public BindableReactiveProperty<string> SearchText { get; set; }
-
-	// [ObservableProperty]
-	// public partial bool IsBusy { get; private set; }
-	
-	public BindableReactiveProperty<bool> IsBusy { get; private set; }
+	public BindableReactiveProperty<bool> IsBusy { get; }
 
 
-	// [ObservableProperty]
 	// public partial AlbumViewModel? SelectedAlbum { get; set; }
-	//
-	// public ObservableCollection<AlbumViewModel> SearchResults { get; } = new();
+	
+	public BindableReactiveProperty<AlbumViewModel?> SelectedAlbum { get; }
+
+	
+	public INotifyCollectionChangedSynchronizedViewList<AlbumViewModel> SearchResults { get; }
+
+
 
 	/// <summary>
 	/// This relay command sends a message indicating that the selected album has been purchased, which will notify music store view to close.
@@ -75,27 +85,29 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 	/// </summary>
 	private async Task DoSearch(string? term)
 	{
-		// _cancellationTokenSource?.Cancel();
-		// _cancellationTokenSource = new CancellationTokenSource();
-		// var cancellationToken = _cancellationTokenSource.Token;
-		//
-		// IsBusy = true;
-		// SearchResults.Clear();
-		//
-		// var albums = await Album.SearchAsync(term);
-		//
-		// foreach (var album in albums)
-		// {
-		// 	var vm = new AlbumViewModel(album);
-		// 	SearchResults.Add(vm);
-		// }
-		//
-		// if (!cancellationToken.IsCancellationRequested)
-		// {
-		// 	LoadCovers(cancellationToken);
-		// }
-		//
-		// IsBusy = false;
+		_cancellationTokenSource?.Cancel();
+		_cancellationTokenSource = new CancellationTokenSource();
+		var cancellationToken = _cancellationTokenSource.Token;
+		
+		IsBusy.Value = true;
+		_searchResults.Clear();
+		
+		var albums = await Album.Album.SearchAsync(term);
+		
+		foreach (var album in albums)
+		{
+			var vm = new AlbumViewModel(album, _loggerFactory);
+			_searchResults.Add(vm);
+		}
+		
+		if (!cancellationToken.IsCancellationRequested)
+		{
+			LoadCovers(cancellationToken);
+		}
+		
+		IsBusy.Value = false;
+		
+		
 	}
 
 	/// <summary>
@@ -103,26 +115,26 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 	/// </summary>
 	private async void LoadCovers(CancellationToken cancellationToken)
 	{
-		// foreach (var album in SearchResults.ToList())
-		// {
-		// 	await album.LoadCover();
-		//
-		// 	if (cancellationToken.IsCancellationRequested)
-		// 	{
-		// 		return;
-		// 	}
-		// }
+		foreach (var album in SearchResults)
+		{
+			await album.LoadCover();
+		
+			if (cancellationToken.IsCancellationRequested)
+			{
+				return;
+			}
+		}
 	}
 
 	/// <summary>
 	/// Triggered when the search text in music store view changes and initiates a new search operation.
 	/// </summary>
-	// partial void OnSearchTextChanged(string? value)
-	// {
-	// 	_ = DoSearch(SearchText);
-	// }
+	private void OnSearchTextChanged(string? value)
+	{
+		_ = DoSearch(value);
+	}
 
-	public Album GetResult()
+	public Album.Album GetResult()
 	{
 		throw new System.NotImplementedException();
 	}

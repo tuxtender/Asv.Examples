@@ -12,9 +12,9 @@ public sealed class MusicStoreDialogPrefab (
 	INavigationService nav,
 	ILoggerFactory loggerFactory,
 	IUnitService unitService
-) : IDialogPrefab<EmptyDialogPayload, Album?>
+) : IDialogPrefab<EmptyDialogPayload, Album.Album?>
 {
-	public async Task<Album?> ShowDialogAsync(EmptyDialogPayload dialogPayload)
+	public async Task<Album.Album?> ShowDialogAsync(EmptyDialogPayload dialogPayload)
 	{
 		using var vm = new MusicStoreDialogViewModel(loggerFactory, unitService);
 

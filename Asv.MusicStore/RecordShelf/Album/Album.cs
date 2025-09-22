@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using iTunesSearch.Library;
 
-namespace Asv.MusicStore.RecordShelf.MusicStore;
+namespace Asv.MusicStore.RecordShelf.Album;
 
 public class Album
 {
