@@ -25,5 +25,10 @@
 			<PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+		<PackageReference Include="iTunesSearch" Version="1.0.44" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AvaloniaXaml Remove="RecordShelf\MusicStore\MusicStoreView.axaml" />
 	</ItemGroup>
 </Project>

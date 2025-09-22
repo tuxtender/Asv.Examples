@@ -23,7 +23,7 @@
 		<Panel Margin="40">
 			<Button HorizontalAlignment="Right"
 					VerticalAlignment="Top"
-					Command="{Binding }">
+					Command="{Binding OpenMusicStoreDialogCommand }">
 				<PathIcon Data="{StaticResource store_microsoft_regular}" />
 			</Button>
 		</Panel>
