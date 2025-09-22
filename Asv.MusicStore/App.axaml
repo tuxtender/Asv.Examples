@@ -4,6 +4,7 @@
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
     <Application.Styles>
-        <StyleInclude Source="avares://Asv.Avalonia/Styling/Theme.axaml"/>
+		<StyleInclude Source="avares://Asv.Avalonia/Styling/Theme.axaml"/>
+		<StyleInclude Source="avares://Asv.MusicStore/Icons.axaml" />
     </Application.Styles>
 </Application>
