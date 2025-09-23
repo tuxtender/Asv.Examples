@@ -58,6 +58,8 @@ public class RecordShelfPageViewModel
 		Icon = PageIcon;
 
 		OpenMusicStoreDialogCommand = new ReactiveCommand(ShowMusicStoreDialogAsync).DisposeItWith(Disposable);
+		
+		LoadAlbums();
 	}
 
 	public ReactiveCommand OpenMusicStoreDialogCommand { get; }
@@ -79,7 +81,7 @@ public class RecordShelfPageViewModel
 		if (album is not null)
 		{
 			Albums.Add(album);
-			// await album.SaveToDiskAsync();
+			await album.SaveToDiskAsync();
 		}
 	}
 	public override IEnumerable<IRoutable> GetRoutableChildren()
