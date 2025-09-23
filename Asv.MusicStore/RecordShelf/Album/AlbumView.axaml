@@ -13,7 +13,7 @@
 		<Border CornerRadius="10" ClipToBounds="True">
 			<Panel Background="#7FFF22DD">
 				<Image Width="200" Stretch="Uniform" Source="{Binding Cover.Value}" />
-				<Panel Height="200" IsVisible="{Binding Cover, Converter={x:Static ObjectConverters.IsNull}}">
+				<Panel Height="200" IsVisible="{Binding Cover.Value, Converter={x:Static ObjectConverters.IsNull}}">
 					<PathIcon Height="75" Width="75" Data="{StaticResource music_regular}" />
 				</Panel>
 			</Panel>
