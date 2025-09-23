@@ -134,8 +134,8 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 		_ = DoSearch(value);
 	}
 
-	public Album.Album GetResult()
+	public AlbumViewModel? GetResult()
 	{
-		throw new System.NotImplementedException();
+		return SelectedAlbum.Value;
 	}
 }

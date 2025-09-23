@@ -1,6 +1,7 @@
 ﻿using System.Composition;
 using System.Threading.Tasks;
 using Asv.Avalonia;
+using Asv.MusicStore.RecordShelf.Album;
 using Microsoft.Extensions.Logging;
 
 namespace Asv.MusicStore.RecordShelf.MusicStore;
@@ -12,9 +13,9 @@ public sealed class MusicStoreDialogPrefab (
 	INavigationService nav,
 	ILoggerFactory loggerFactory,
 	IUnitService unitService
-) : IDialogPrefab<EmptyDialogPayload, Album.Album?>
+) : IDialogPrefab<EmptyDialogPayload, AlbumViewModel?>
 {
-	public async Task<Album.Album?> ShowDialogAsync(EmptyDialogPayload dialogPayload)
+	public async Task<AlbumViewModel?> ShowDialogAsync(EmptyDialogPayload dialogPayload)
 	{
 		using var vm = new MusicStoreDialogViewModel(loggerFactory, unitService);
 

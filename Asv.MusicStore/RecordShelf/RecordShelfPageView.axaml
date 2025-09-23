@@ -3,6 +3,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:recordShelf="clr-namespace:Asv.MusicStore.RecordShelf"
+			 xmlns:album="clr-namespace:Asv.MusicStore.RecordShelf.Album"
 			 mc:Ignorable="d"
 			 d:DesignWidth="800"
 			 d:DesignHeight="450"
@@ -26,6 +27,23 @@
 					Command="{Binding OpenMusicStoreDialogCommand }">
 				<PathIcon Data="{StaticResource store_microsoft_regular}" />
 			</Button>
+
+			<ScrollViewer VerticalScrollBarVisibility="Auto"
+						  Margin="0 40 0 0">
+				<ItemsControl ItemsSource="{Binding Albums}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel />
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<album:AlbumView Margin="0 0 20 20" />
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
 		</Panel>
 	</Panel>
 </UserControl>
