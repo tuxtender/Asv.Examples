@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Composition;
 using System.Linq;
 using System.Threading;
@@ -12,6 +11,7 @@ using Asv.MusicStore.RecordShelf.MusicStore;
 using Material.Icons;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using ObservableCollections;
 using R3;
 
 namespace Asv.MusicStore.RecordShelf;
@@ -27,6 +27,8 @@ public class RecordShelfPageViewModel
 {
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly MusicStoreDialogPrefab _musicStorePrefab;
+	private readonly ObservableList<AlbumViewModel> _albums = [];
+	
 	public const string PageId = "record_shelf";
 	public const MaterialIconKind PageIcon = MaterialIconKind.ViewGallery;
 
@@ -57,6 +59,12 @@ public class RecordShelfPageViewModel
 		Title = "RS.ControlsGalleryPageViewModel_Title";
 		Icon = PageIcon;
 
+		_albums.SetRoutableParent(this).DisposeItWith(Disposable);
+		_albums.DisposeRemovedItems().DisposeItWith(Disposable);
+		Albums = _albums
+			.ToNotifyCollectionChangedSlim()
+			.DisposeItWith(Disposable);
+
 		OpenMusicStoreDialogCommand = new ReactiveCommand(ShowMusicStoreDialogAsync).DisposeItWith(Disposable);
 		
 		LoadAlbums();
@@ -64,7 +72,7 @@ public class RecordShelfPageViewModel
 
 	public ReactiveCommand OpenMusicStoreDialogCommand { get; }
 	
-	public ObservableCollection<AlbumViewModel> Albums { get; } = new();
+	public NotifyCollectionChangedSynchronizedViewList<AlbumViewModel> Albums { get; }
 	
 	public override IExportInfo Source => SystemModule.Instance;
 
@@ -80,14 +88,19 @@ public class RecordShelfPageViewModel
 
 		if (album is not null)
 		{
-			Albums.Add(album);
+			_albums.Add(album);
 			await album.SaveToDiskAsync();
 		}
 	}
 	public override IEnumerable<IRoutable> GetRoutableChildren()
 	{
-		throw new System.NotImplementedException();
+		foreach (var album in _albums)
+		{
+			yield return album;
+		}
 	}
+
+	protected override void AfterLoadExtensions() { }
 
 	/// <summary>
 	/// Loads albums and their covers from cache.
@@ -97,13 +110,10 @@ public class RecordShelfPageViewModel
 		var albums = (await Album.Album.LoadCachedAsync()).Select(x => new AlbumViewModel(x, _loggerFactory)).ToList();
 		foreach (var album in albums)
 		{
-			Albums.Add(album);
+			_albums.Add(album);
 		}
+
 		var coverTasks = albums.Select(album => album.LoadCover());
 		await Task.WhenAll(coverTasks);
-	}
-	
-	protected override void AfterLoadExtensions()
-	{
 	}
 }

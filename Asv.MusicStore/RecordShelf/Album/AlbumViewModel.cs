@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Asv.Avalonia;
 using Asv.Common;
 using Avalonia.Media.Imaging;
@@ -7,12 +8,14 @@ using R3;
 
 namespace Asv.MusicStore.RecordShelf.Album;
 
-public class AlbumViewModel : DisposableViewModel
+public class AlbumViewModel : RoutableViewModel
 {
 	private readonly Album _album;
 
 	public AlbumViewModel(Album album, ILoggerFactory loggerFactory)
-		: base(NavigationId.Empty, loggerFactory)
+		: base(
+			NavigationId.GenerateByHash(album.Artist, album.Title, album.CoverUrl),
+			loggerFactory)
 	{
 		_album = album;
 
@@ -56,4 +59,6 @@ public class AlbumViewModel : DisposableViewModel
 			});
 		}
 	}
+
+	public override IEnumerable<IRoutable> GetRoutableChildren() => [];
 }

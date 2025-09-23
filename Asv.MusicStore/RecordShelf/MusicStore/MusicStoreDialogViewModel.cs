@@ -32,11 +32,12 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 		: base(DialogId, loggerFactory) {
 		_loggerFactory = loggerFactory;
 
+		_searchResults.SetRoutableParent(this).DisposeItWith(Disposable);
+		_searchResults.DisposeRemovedItems().DisposeItWith(Disposable);
 		SearchResults = _searchResults
 			.ToNotifyCollectionChangedSlim(SynchronizationContextCollectionEventDispatcher.Current)
 			.DisposeItWith(Disposable);
-	
-		BuyMusicCommand = new ReactiveCommand(BuyMusic).DisposeItWith(Disposable);
+
 		IsBusy = new BindableReactiveProperty<bool>().DisposeItWith(Disposable);
 		
 		SelectedAlbum = new BindableReactiveProperty<AlbumViewModel?>().DisposeItWith(Disposable);
@@ -48,7 +49,10 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 
 	public override IEnumerable<IRoutable> GetRoutableChildren()
 	{
-		throw new System.NotImplementedException();
+		foreach (var albumViewModel in _searchResults)
+		{
+			yield return albumViewModel;
+		}
 	}
 
 	public BindableReactiveProperty<string?> SearchText { get; }
@@ -58,27 +62,14 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 	public BindableReactiveProperty<bool> IsBusy { get; }
 
 
-	// public partial AlbumViewModel? SelectedAlbum { get; set; }
-	
 	public BindableReactiveProperty<AlbumViewModel?> SelectedAlbum { get; }
 
-	
 	public INotifyCollectionChangedSynchronizedViewList<AlbumViewModel> SearchResults { get; }
 
-
-
-	/// <summary>
-	/// This relay command sends a message indicating that the selected album has been purchased, which will notify music store view to close.
-	/// </summary>
-	private void BuyMusic(Unit unit)
+	public AlbumViewModel? GetResult()
 	{
-		// if (SelectedAlbum != null)
-		// {
-		// 	WeakReferenceMessenger.Default.Send(new MusicStoreClosedMessage(SelectedAlbum));
-		// }
+		return SelectedAlbum.Value;
 	}
-	
-	public ReactiveCommand BuyMusicCommand { get; }
 
 	/// <summary>
 	/// Performs an asynchronous search for albums based on the provided term and updates the results.
@@ -115,7 +106,7 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 	/// </summary>
 	private async void LoadCovers(CancellationToken cancellationToken)
 	{
-		foreach (var album in SearchResults)
+		foreach (var album in _searchResults)
 		{
 			await album.LoadCover();
 		
@@ -132,10 +123,5 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 	private void OnSearchTextChanged(string? value)
 	{
 		_ = DoSearch(value);
-	}
-
-	public AlbumViewModel? GetResult()
-	{
-		return SelectedAlbum.Value;
 	}
 }
