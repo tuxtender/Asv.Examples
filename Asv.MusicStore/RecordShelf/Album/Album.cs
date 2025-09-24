@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using iTunesSearch.Library;
 
@@ -77,7 +78,7 @@ public class Album
     /// <summary>
     /// Loads the album cover bitmap from cache or api.
     /// </summary>
-    public async Task<Stream> LoadCoverBitmapAsync()
+    public async Task<Stream> LoadCoverBitmapAsync(CancellationToken cancelToken)
     {
         if (File.Exists(CachePath + ".bmp"))
         {
@@ -85,7 +86,7 @@ public class Album
         }
         else
         {
-            var data = await _httpClient.GetByteArrayAsync(CoverUrl);
+            var data = await _httpClient.GetByteArrayAsync(CoverUrl, cancelToken).ConfigureAwait(false);
             return new MemoryStream(data);
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Threading;
@@ -18,7 +19,7 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 	private readonly ILoggerFactory _loggerFactory;
 	public const string DialogId = $"{BaseId}.musicstore";
 	
-	private CancellationTokenSource? _cancellationTokenSource;
+	private CancellationTokenSource _cancellationTokenSource;
 
 
 	public MusicStoreDialogViewModel()
@@ -43,7 +44,8 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 		SelectedAlbum = new BindableReactiveProperty<AlbumViewModel?>().DisposeItWith(Disposable);
 		
 		SearchText = new BindableReactiveProperty<string?>().DisposeItWith(Disposable);
-		SearchText.Subscribe(OnSearchTextChanged);
+		SearchText.ObserveOnCurrentSynchronizationContext().Subscribe(OnSearchTextChanged);
+		_cancellationTokenSource = new CancellationTokenSource().DisposeItWith(Disposable);
 
 	}
 
@@ -66,54 +68,72 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 
 	public INotifyCollectionChangedSynchronizedViewList<AlbumViewModel> SearchResults { get; }
 
-	public AlbumViewModel? GetResult()
+	public Album.Album? GetResult()
 	{
-		return SelectedAlbum.Value;
+		return SelectedAlbum.Value?.Album;
 	}
 
+	// protected override void Dispose(bool disposing)
+	// {
+	// 	if (disposing)
+	// 	{
+	// 		_cancellationTokenSource?.Cancel();
+	// 		_cancellationTokenSource?.Dispose();
+	// 	}
+	//
+	// 	base.Dispose(disposing);
+	// }
+	
 	/// <summary>
 	/// Performs an asynchronous search for albums based on the provided term and updates the results.
 	/// </summary>
 	private async Task DoSearch(string? term)
 	{
-		_cancellationTokenSource?.Cancel();
+		await _cancellationTokenSource.CancelAsync();
+		_cancellationTokenSource.Dispose();
+		_searchResults.ClearWithItemsDispose();
 		_cancellationTokenSource = new CancellationTokenSource();
 		var cancellationToken = _cancellationTokenSource.Token;
 		
 		IsBusy.Value = true;
-		_searchResults.Clear();
+		// _searchResults.Clear();
 		
 		var albums = await Album.Album.SearchAsync(term);
 		
 		foreach (var album in albums)
 		{
-			var vm = new AlbumViewModel(album, _loggerFactory);
+			var vm = new AlbumViewModel(album, _loggerFactory)
+				.SetRoutableParent(this)
+				.DisposeItWith(Disposable);
+
 			_searchResults.Add(vm);
 		}
-		
-		if (!cancellationToken.IsCancellationRequested)
-		{
-			LoadCovers(cancellationToken);
-		}
-		
+
 		IsBusy.Value = false;
-		
-		
+
+		await LoadCovers(cancellationToken);
 	}
 
 	/// <summary>
 	/// Asynchronously loads album cover images for each result, unless the operation is canceled.
 	/// </summary>
-	private async void LoadCovers(CancellationToken cancellationToken)
+	private async Task LoadCovers(CancellationToken cancellationToken)
 	{
-		foreach (var album in _searchResults)
+		try
 		{
-			await album.LoadCover();
-		
-			if (cancellationToken.IsCancellationRequested)
+			foreach (var album in _searchResults)
 			{
-				return;
+				await album.LoadCover(cancellationToken);
+
+				// if (cancellationToken.IsCancellationRequested)
+				// {
+				// 	return;
+				// }
 			}
+		}
+		catch (OperationCanceledException ex)
+		{
+			Logger.LogInformation("Loading covers aborted");
 		}
 	}
 

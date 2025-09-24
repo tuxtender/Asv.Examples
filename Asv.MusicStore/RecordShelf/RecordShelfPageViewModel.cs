@@ -88,8 +88,15 @@ public class RecordShelfPageViewModel
 
 		if (album is not null)
 		{
-			_albums.Add(album);
-			await album.SaveToDiskAsync();
+			var albumViewModel = new AlbumViewModel(album, _loggerFactory)
+				.SetRoutableParent(this)
+				.DisposeItWith(Disposable);
+			
+			await albumViewModel.LoadCover(CancellationToken.None);
+			
+			_albums.Add(albumViewModel);
+			
+			await albumViewModel.SaveToDiskAsync();
 		}
 	}
 	public override IEnumerable<IRoutable> GetRoutableChildren()
@@ -113,7 +120,7 @@ public class RecordShelfPageViewModel
 			_albums.Add(album);
 		}
 
-		var coverTasks = albums.Select(album => album.LoadCover());
+		var coverTasks = albums.Select(album => album.LoadCover(CancellationToken.None));
 		await Task.WhenAll(coverTasks);
 	}
 }

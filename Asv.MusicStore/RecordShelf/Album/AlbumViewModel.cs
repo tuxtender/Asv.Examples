@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Asv.Avalonia;
 using Asv.Common;
@@ -25,18 +27,18 @@ public class AlbumViewModel : RoutableViewModel
 	public string Artist => _album.Artist;
 
 	public string Title => _album.Title;
+	
+	public Album Album => _album;
 
 	public BindableReactiveProperty<Bitmap?> Cover { get; }
 
 	/// <summary>
 	/// Asynchronously loads and decodes the album cover image, then assigns it to <see cref="Cover"/>.
 	/// </summary>
-	public async Task LoadCover()
+	public async Task LoadCover(CancellationToken cancelToken)
 	{
-		await using (var imageStream = await _album.LoadCoverBitmapAsync())
-		{
-			Cover.Value = await Task.Run(() => Bitmap.DecodeToWidth(imageStream, 400));
-		}
+		await using var imageStream = await _album.LoadCoverBitmapAsync(cancelToken);
+		Cover.Value = await Task.Run(() => Bitmap.DecodeToWidth(imageStream, 400), cancelToken);
 	}
 
 	/// <summary>
@@ -46,7 +48,7 @@ public class AlbumViewModel : RoutableViewModel
 	{
 		await _album.SaveAsync();
 
-		if (Cover != null)
+		if (Cover.Value != null)
 		{
 			var bitmap = Cover.Value;
 
@@ -61,4 +63,14 @@ public class AlbumViewModel : RoutableViewModel
 	}
 
 	public override IEnumerable<IRoutable> GetRoutableChildren() => [];
+	
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			Cover.Value?.Dispose();
+		}
+
+		base.Dispose(disposing);
+	}
 }
