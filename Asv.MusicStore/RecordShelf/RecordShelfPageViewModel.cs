@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Composition;
-using System.Linq;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Asv.Avalonia;
@@ -8,6 +9,7 @@ using Asv.Cfg;
 using Asv.Common;
 using Asv.MusicStore.RecordShelf.Album;
 using Asv.MusicStore.RecordShelf.MusicStore;
+using Avalonia.Media.Imaging;
 using Material.Icons;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,13 +20,17 @@ namespace Asv.MusicStore.RecordShelf;
 
 public interface IRecordShelfPageViewModel : IPage;
 
-public sealed class RecordShelfPageViewModelConfig : PageConfig;
+public sealed class RecordShelfPageViewModelConfig : PageConfig 
+{
+	public List<AlbumDto> Albums { get; } = [];
+}
 
 [ExportPage(PageId)]
 public class RecordShelfPageViewModel
 	: PageViewModel<IRecordShelfPageViewModel, RecordShelfPageViewModelConfig>,
 		IRecordShelfPageViewModel
 {
+	private readonly IConfiguration _cfg;
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly MusicStoreDialogPrefab _musicStorePrefab;
 	private readonly ObservableList<AlbumViewModel> _albums = [];
@@ -52,6 +58,7 @@ public class RecordShelfPageViewModel
 		ILoggerFactory loggerFactory)
 		: base(PageId, cmd, cfg, loggerFactory)
 	{
+		_cfg = cfg;
 		_loggerFactory = loggerFactory;
 		_musicStorePrefab = dialogService.GetDialogPrefab<MusicStoreDialogPrefab>();
 
@@ -66,8 +73,6 @@ public class RecordShelfPageViewModel
 			.DisposeItWith(Disposable);
 
 		OpenMusicStoreDialogCommand = new ReactiveCommand(ShowMusicStoreDialogAsync).DisposeItWith(Disposable);
-		
-		LoadAlbums();
 	}
 
 	public ReactiveCommand OpenMusicStoreDialogCommand { get; }
@@ -93,10 +98,16 @@ public class RecordShelfPageViewModel
 				.DisposeItWith(Disposable);
 			
 			await albumViewModel.LoadCover(CancellationToken.None);
-			
+
 			_albums.Add(albumViewModel);
-			
-			await albumViewModel.SaveToDiskAsync();
+			using var stream = new MemoryStream();
+			albumViewModel.Cover.Value?.Save(stream);
+			var imageBytes = stream.ToArray();
+			var base64String = Convert.ToBase64String(imageBytes);
+
+			Config.Albums.Add(new AlbumDto(album.Title, album.Artist, album.CoverUrl, base64String));
+
+			_cfg.Set(Config);
 		}
 	}
 	public override IEnumerable<IRoutable> GetRoutableChildren()
@@ -107,20 +118,23 @@ public class RecordShelfPageViewModel
 		}
 	}
 
-	protected override void AfterLoadExtensions() { }
-
-	/// <summary>
-	/// Loads albums and their covers from cache.
-	/// </summary>
-	private async void LoadAlbums()
+	protected override void AfterLoadExtensions()
 	{
-		var albums = (await Album.Album.LoadCachedAsync()).Select(x => new AlbumViewModel(x, _loggerFactory)).ToList();
-		foreach (var album in albums)
-		{
-			_albums.Add(album);
-		}
+		var config = _cfg.Get<RecordShelfPageViewModelConfig>();
 
-		var coverTasks = albums.Select(album => album.LoadCover(CancellationToken.None));
-		await Task.WhenAll(coverTasks);
+		foreach (var albumDto in config.Albums)
+		{
+			var album = new Album.Album(albumDto.Artist, albumDto.Title, albumDto.CoverUrl);
+
+			var vm = new AlbumViewModel(album, _loggerFactory)
+				.SetRoutableParent(this)
+				.DisposeItWith(Disposable);
+			
+			var imageBytes = Convert.FromBase64String(albumDto.Image);
+			using var ms = new MemoryStream(imageBytes);
+			vm.Cover.Value = new Bitmap(ms);
+
+			_albums.Add(vm);
+		}
 	}
 }
