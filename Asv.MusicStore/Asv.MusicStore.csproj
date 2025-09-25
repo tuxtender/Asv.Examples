@@ -36,4 +36,14 @@
 	  <AdditionalFiles Include="Album\AlbumView.axaml" />
 	  <AdditionalFiles Include="MusicStore\MusicStoreDialogView.axaml" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="RS.resx">
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	  </EmbeddedResource>
+	  <EmbeddedResource Update="RS.ru.resx">
+	    <Generator>PublicResXFileCodeGenerator</Generator>
+	  </EmbeddedResource>
+	</ItemGroup>
+
 </Project>

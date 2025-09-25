@@ -20,9 +20,8 @@ public sealed class MusicStoreDialogPrefab(
 
 		var dialogContent = new ContentDialog(vm, nav)
 		{
-			Title = "RS.GeoPointDialogPrefab_Content_Title",
-			PrimaryButtonText = "RS.DialogButton_Save", // "Buy Album"
-			SecondaryButtonText = "RS.DialogButton_Cancel",
+			PrimaryButtonText = RS.MusicStoreDialogPrefab_DialogButton_BuyAlbum,
+			SecondaryButtonText = RS.MusicStoreDialogPrefab_DialogButton_Exit,
 			DefaultButton = ContentDialogButton.Primary,
 		};
 

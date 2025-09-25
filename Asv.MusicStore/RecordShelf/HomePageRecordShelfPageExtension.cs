@@ -19,8 +19,8 @@ public class HomePageRecordShelfPageExtension(ILoggerFactory loggerFactory)
 			OpenRecordShelfPageCommand
 				.StaticInfo.CreateAction(
 					loggerFactory,
-					"RS.OpenControlsGalleryPageCommand_Action_Title",
-					"RS.OpenControlsGalleryPageCommand_Action_Description"
+					RS.OpenRecordShelfPageCommand_Action_Title,
+					RS.OpenRecordShelfPageCommand_Action_Description
 				)
 				.DisposeItWith(contextDispose)
 		);

@@ -67,7 +67,7 @@ public class RecordShelfPageViewModel
 		_loggerFactory = loggerFactory;
 		_musicStorePrefab = dialogService.GetDialogPrefab<MusicStoreDialogPrefab>();
 
-		Title = "RS.ControlsGalleryPageViewModel_Title";
+		Title = RS.RecordShelfPageViewModel_Title;
 		Icon = PageIcon;
 
 		_albums.SetRoutableParent(this).DisposeItWith(Disposable);
