@@ -13,7 +13,7 @@
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top">
 			<TextBox Watermark="Search for Albums...."
-					 Text="{Binding SearchText.Value, Delay=400}" />
+					 Text="{Binding SearchText.ModelValue.Value, Delay=400}" />
 			<ProgressBar IsIndeterminate="True"
 						 IsVisible="{Binding IsBusy}" />
 		</StackPanel>

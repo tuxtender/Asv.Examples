@@ -17,6 +17,8 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 {
 	private readonly ObservableList<AlbumViewModel> _searchResults = [];
 	private readonly ILoggerFactory _loggerFactory;
+	private readonly ReactiveProperty<string?> _searchText;
+
 	public const string DialogId = $"{BaseId}.musicstore";
 	
 	private CancellationTokenSource _cancellationTokenSource;
@@ -42,31 +44,40 @@ public class MusicStoreDialogViewModel : DialogViewModelBase
 		IsBusy = new BindableReactiveProperty<bool>().DisposeItWith(Disposable);
 		
 		SelectedAlbum = new BindableReactiveProperty<AlbumViewModel?>().DisposeItWith(Disposable);
-		
-		SearchText = new BindableReactiveProperty<string?>().DisposeItWith(Disposable);
-		SearchText.ObserveOnCurrentSynchronizationContext().Subscribe(OnSearchTextChanged);
+
 		_cancellationTokenSource = new CancellationTokenSource().DisposeItWith(Disposable);
 
+		_searchText = new ReactiveProperty<string?>().DisposeItWith(Disposable);
+		_searchText.ObserveOnCurrentSynchronizationContext().Subscribe(OnSearchTextChanged);
+
+		SearchText = new HistoricalStringProperty(
+			nameof(SearchText),
+			_searchText,
+			loggerFactory,
+			this
+		).DisposeItWith(Disposable);
 	}
 
 	public override IEnumerable<IRoutable> GetRoutableChildren()
 	{
+		yield return SearchText;
+		
 		foreach (var albumViewModel in _searchResults)
 		{
 			yield return albumViewModel;
 		}
 	}
 
-	public BindableReactiveProperty<string?> SearchText { get; }
-
-
-	
 	public BindableReactiveProperty<bool> IsBusy { get; }
 
 
 	public BindableReactiveProperty<AlbumViewModel?> SelectedAlbum { get; }
 
 	public INotifyCollectionChangedSynchronizedViewList<AlbumViewModel> SearchResults { get; }
+	
+	public HistoricalStringProperty SearchText { get; }
+
+	
 
 	public Album.Album? GetResult()
 	{
