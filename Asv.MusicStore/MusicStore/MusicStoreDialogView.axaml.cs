@@ -1,9 +1,7 @@
 ﻿using Asv.Avalonia;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
-namespace Asv.MusicStore.RecordShelf.MusicStore;
+namespace Asv.MusicStore.MusicStore;
 
 [ExportViewFor(typeof(MusicStoreDialogViewModel))]
 

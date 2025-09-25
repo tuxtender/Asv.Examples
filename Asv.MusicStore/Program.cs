@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using Asv.Avalonia;
-using Asv.Common;
 using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 
@@ -34,8 +33,9 @@ sealed class Program
 				options.WithLogToConsole();
 				options.WithLogViewer();
 				options.WithLogLevel(LogLevel.Trace);
-			});
-		
+			})
+			.UseMusicStoreServices();
+
 		using var host = builder.Build();
 		host.ExitIfNotFirstInstance();
 		host.StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
@@ -46,9 +46,11 @@ sealed class Program
 		AppBuilder
 			.Configure<App>()
 			.UsePlatformDetect()
-			.With(new Win32PlatformOptions { OverlayPopups = true }) // Windows
+			.With(new Win32PlatformOptions
+			{
+				OverlayPopups = true
+			})
 			.WithInterFont()
 			.LogToTrace()
 			.UseR3();
-			
 }

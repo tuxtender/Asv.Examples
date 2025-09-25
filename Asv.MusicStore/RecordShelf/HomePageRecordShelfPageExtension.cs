@@ -10,19 +10,19 @@ namespace Asv.MusicStore.RecordShelf;
 [ExportExtensionFor<IHomePage>]
 [method: ImportingConstructor]
 public class HomePageRecordShelfPageExtension(ILoggerFactory loggerFactory)
-    : AsyncDisposableOnce,
-        IExtensionFor<IHomePage>
+	: AsyncDisposableOnce,
+		IExtensionFor<IHomePage>
 {
-    public void Extend(IHomePage context, CompositeDisposable contextDispose)
-    {
-        context.Tools.Add(
-            OpenRecordShelfPageCommand
-                .StaticInfo.CreateAction(
-                    loggerFactory,
-                   "RS.OpenControlsGalleryPageCommand_Action_Title",
-                    "RS.OpenControlsGalleryPageCommand_Action_Description"
-                )
-                .DisposeItWith(contextDispose)
-        );
-    }
+	public void Extend(IHomePage context, CompositeDisposable contextDispose)
+	{
+		context.Tools.Add(
+			OpenRecordShelfPageCommand
+				.StaticInfo.CreateAction(
+					loggerFactory,
+					"RS.OpenControlsGalleryPageCommand_Action_Title",
+					"RS.OpenControlsGalleryPageCommand_Action_Description"
+				)
+				.DisposeItWith(contextDispose)
+		);
+	}
 }

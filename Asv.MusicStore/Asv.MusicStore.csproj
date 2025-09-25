@@ -31,4 +31,9 @@
 	<ItemGroup>
 	  <AvaloniaXaml Remove="RecordShelf\MusicStore\MusicStoreView.axaml" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <AdditionalFiles Include="Album\AlbumView.axaml" />
+	  <AdditionalFiles Include="MusicStore\MusicStoreDialogView.axaml" />
+	</ItemGroup>
 </Project>

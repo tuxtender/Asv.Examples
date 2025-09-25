@@ -1,23 +1,22 @@
 ﻿using System.Composition;
 using System.Threading.Tasks;
 using Asv.Avalonia;
-using Asv.MusicStore.RecordShelf.Album;
+using Asv.MusicStore.Services;
 using Microsoft.Extensions.Logging;
 
-namespace Asv.MusicStore.RecordShelf.MusicStore;
+namespace Asv.MusicStore.MusicStore;
 
 [ExportDialogPrefab]
 [Shared]
 [method: ImportingConstructor]
-public sealed class MusicStoreDialogPrefab (
+public sealed class MusicStoreDialogPrefab(
+	IAlbumProvider albumProvider,
 	INavigationService nav,
-	ILoggerFactory loggerFactory,
-	IUnitService unitService
-) : IDialogPrefab<EmptyDialogPayload, Album.Album?>
+	ILoggerFactory loggerFactory) : IDialogPrefab<EmptyDialogPayload, MusicAlbum?>
 {
-	public async Task<Album.Album?> ShowDialogAsync(EmptyDialogPayload dialogPayload)
+	public async Task<MusicAlbum?> ShowDialogAsync(EmptyDialogPayload dialogPayload)
 	{
-		using var vm = new MusicStoreDialogViewModel(loggerFactory, unitService);
+		using var vm = new MusicStoreDialogViewModel(albumProvider, loggerFactory);
 
 		var dialogContent = new ContentDialog(vm, nav)
 		{
