@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Asv.Avalonia;
 using Asv.Common;
 using Avalonia.Media.Imaging;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using R3;
 
 namespace Asv.MusicStore.RecordShelf.Album;
@@ -14,14 +16,21 @@ public class AlbumViewModel : RoutableViewModel
 {
 	private readonly Album _album;
 
+	
+	public AlbumViewModel(): base(NavigationId.Empty, NullLoggerFactory.Instance)
+	{
+		DesignTime.ThrowIfNotDesignMode();
+		_album = new Album("Artist", "Title", string.Empty);
+		Cover = new BindableReactiveProperty<Bitmap?>();
+	}
+	
 	public AlbumViewModel(Album album, ILoggerFactory loggerFactory)
 		: base(
 			NavigationId.GenerateByHash(album.Artist, album.Title, album.CoverUrl),
 			loggerFactory)
 	{
 		_album = album;
-
-		Cover = new BindableReactiveProperty<Bitmap?>().DisposeItWith(Disposable);
+		Cover = new BindableReactiveProperty<Bitmap?>();
 	}
 
 	public string Artist => _album.Artist;

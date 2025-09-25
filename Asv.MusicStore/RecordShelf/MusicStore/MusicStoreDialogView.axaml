@@ -9,7 +9,9 @@
 			 x:CompileBindings="True"
 			 x:Class="Asv.MusicStore.RecordShelf.MusicStore.MusicStoreDialogView"
 			 x:DataType="musicStore:MusicStoreDialogViewModel">
-
+	<Design.DataContext>
+		<musicStore:MusicStoreDialogViewModel />
+	</Design.DataContext> 
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top">
 			<TextBox Watermark="Search for Albums...."

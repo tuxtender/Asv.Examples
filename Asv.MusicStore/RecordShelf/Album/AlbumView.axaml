@@ -4,11 +4,14 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="clr-namespace:Asv.MusicStore.RecordShelf.Album"
 			 mc:Ignorable="d"
-			 d:DesignWidth="800"
-			 d:DesignHeight="450"
+			 d:DesignWidth="200"
+			 d:DesignHeight="250"
 			 Width="200"
 			 x:Class="Asv.MusicStore.RecordShelf.Album.AlbumView"
 			 x:DataType="vm:AlbumViewModel">
+	<Design.DataContext>
+		<vm:AlbumViewModel />
+	</Design.DataContext>
 	<StackPanel Spacing="5" Width="200">
 		<Border CornerRadius="10" ClipToBounds="True">
 			<Panel Background="#7FFF22DD">
